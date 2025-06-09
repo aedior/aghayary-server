@@ -16,6 +16,8 @@
 
         body {
             font-family: "Vazirmatn",  sans-serif;
+            display: flex;
+            flex-direction: column;
             font-optical-sizing: auto;
             direction: rtl;
             background-color: #fff;
@@ -25,6 +27,8 @@
             margin: auto;
             padding: 20px;
             box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            min-height: 150mm;
+            justify-content: space-between;
         }
 
         h2 {
@@ -102,6 +106,8 @@
     </style>
 </head>
 <body>
+
+   <div style="height: 100%;">
     <div class="print-button">
         <button onclick="window.print()">چاپ فاکتور</button>
     </div>
@@ -112,6 +118,7 @@
         <p><strong>مشتری:</strong> {{ order.customer.name }}</p>
         <p><strong>تاریخ سفارش:</strong> {{ jalali_date }}</p>
     </div>
+<div style="height: 100%;">
 
     <table>
         <thead>
@@ -137,9 +144,12 @@
     </table>
 
     <p class="total">جمع کل: {{ order.total_price }} تومان</p>
+</div>
 
-    <div class="footer">
-        <p>با تشکر از خرید شما 🌟</p>
-    </div>
+
+   </div>
+   <div class="footer">
+    <p>با تشکر از خرید شما 🌟</p>
+</div>
 </body>
 </html>

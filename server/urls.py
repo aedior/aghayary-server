@@ -17,8 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from order.views import invoice_view
+from panel.views import export_panels_excel
+
 
 urlpatterns = [
     path('admin/invoice/<int:order_id>/', invoice_view, name='order-invoice'),
     path('admin/', admin.site.urls),
+    path('export/panels/', export_panels_excel, name='export_panels_excel'),
 ]
+
+
