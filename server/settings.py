@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'jazzmin',
+    'django_jalali',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,7 +44,9 @@ INSTALLED_APPS = [
     'menuItem',
     'customer',
     'order.apps.OrderConfig',
-    'panel'
+    'panel',
+    'core',
+    'expend'
 ]
 
 MIDDLEWARE = [
@@ -111,11 +114,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'Asia/Tehran'
 USE_I18N = True
-
+USE_L10N = False  # چون فرمت تاریخ رو خودت کنترل می‌کنی
 USE_TZ = True
 
 

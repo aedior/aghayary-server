@@ -16,10 +16,13 @@ import os
 from django.conf import settings
 import arabic_reshaper
 from bidi.algorithm import get_display
+from django_jalali.admin.filters import JDateFieldListFilter
 
+# You need to import this for adding jalali calendar widget
+import django_jalali.admin as jadmin
 
 @admin.register(PanelModel)
-class PanelModelAdmin(admin.ModelAdmin):
+class PanelModelAdmin( admin.ModelAdmin):
     list_display = [
         'menu_item_name',
         'customer_name',
@@ -27,7 +30,7 @@ class PanelModelAdmin(admin.ModelAdmin):
         'price_buy',
         'price_sell',
         'profit',
-        'created_at',
+        'createdat',
     ]
     readonly_fields = [
         'menu_item_name',
@@ -36,9 +39,11 @@ class PanelModelAdmin(admin.ModelAdmin):
         'price_buy',
         'price_sell',
         'profit',
-        'created_at',
+        'createdat',
     ]
-    list_filter = ['created_at']
+    list_filter = (
+        ('created_at', JDateFieldListFilter),
+    )
     search_fields = ['order_item__menu_item__name', 'order_item__order__customer__name']
     ordering = ['-created_at']
 
@@ -83,15 +88,22 @@ class PanelModelAdmin(admin.ModelAdmin):
 
         queryset = queryset.select_related('order_item__order', 'order_item__menu_item')
 
+        total_expend = 0  # مجموع هزینه‌ها
+
         for panel in queryset:
-            key = panel.menu_item.id
-            grouped_data[key]['name'] = panel.menu_item.name
-            grouped_data[key]['quantity'] += panel.quantity
-            grouped_data[key]['price_buy_unit'] = panel.price_buy
-            grouped_data[key]['price_sell_unit'] = panel.price_sell
-            grouped_data[key]['price_buy_total'] += panel.price_buy * panel.quantity
-            grouped_data[key]['price_sell_total'] += panel.price_sell * panel.quantity
-            grouped_data[key]['profit'] += panel.profit
+            if panel.menu_item:
+                key = panel.menu_item.id
+                grouped_data[key]['name'] = panel.menu_item.name
+                grouped_data[key]['quantity'] += panel.quantity
+                grouped_data[key]['price_buy_unit'] = panel.price_buy
+                grouped_data[key]['price_sell_unit'] = panel.price_sell
+                grouped_data[key]['price_buy_total'] += panel.price_buy * panel.quantity
+                grouped_data[key]['price_sell_total'] += panel.price_sell * panel.quantity
+                grouped_data[key]['profit'] += panel.profit
+
+            # اگر هزینه‌ای برای این پنل ثبت شده بود، جمعش کن
+            if panel.expend:
+                total_expend += panel.expend.count
 
         data = [[
             Paragraph(reshape("نام آیتم"), style_rtl),
@@ -100,7 +112,7 @@ class PanelModelAdmin(admin.ModelAdmin):
             Paragraph(reshape("تعداد"), style_rtl),
             Paragraph(reshape("جمع خرید"), style_rtl),
             Paragraph(reshape("جمع فروش"), style_rtl),
-            Paragraph(reshape("سود"), style_rtl),
+            Paragraph(reshape("مبلغ"), style_rtl),
         ]]
 
         total_quantity = 0
@@ -132,6 +144,18 @@ class PanelModelAdmin(admin.ModelAdmin):
             Paragraph(reshape(total_profit), style_rtl),
         ])
 
+        data.append([
+            Paragraph(reshape("هزینه‌ها"), style_rtl),
+            "", "", "", "", "",
+            Paragraph(reshape(total_expend), style_rtl),
+        ])
+
+        data.append([
+            Paragraph(reshape("سود خالص نهایی"), style_rtl),
+            "", "", "", "", "",
+            Paragraph(reshape(total_profit - total_expend), style_rtl),
+        ])
+
         table = Table(data, colWidths=[75] * 7, hAlign='RIGHT')
         table.setStyle(TableStyle([
             ('FONTNAME', (0, 0), (-1, -1), 'Vazir'),
@@ -149,11 +173,13 @@ class PanelModelAdmin(admin.ModelAdmin):
 
 
     def menu_item_name(self, obj):
-        return obj.menu_item.name
+        if obj.menu_item:
+            return obj.menu_item.name
     menu_item_name.short_description = 'نام آیتم'
 
-    def customer_name(self, obj):
-        return obj.customer.name
+    def customer_name(self, obj):   
+        if obj.menu_item:
+            return obj.customer.name
     customer_name.short_description = 'مشتری'
 
     def quantity(self, obj):
@@ -161,13 +187,18 @@ class PanelModelAdmin(admin.ModelAdmin):
     quantity.short_description = 'تعداد'
 
     def price_buy(self, obj):
-        return obj.price_buy
-    price_buy.short_description = 'قیمت خرید'
+        if obj.menu_item:
+            return f"{obj.price_buy:,.0f} تومان"
+    price_buy.short_description = 'قیمت خرید واحد'
 
     def price_sell(self, obj):
-        return obj.price_sell
-    price_sell.short_description = 'قیمت فروش'
+        if obj.menu_item:
+            return f"{obj.price_sell:,.0f} تومان"
+    price_sell.short_description = 'قیمت فروش واحد'
 
     def profit(self, obj):
-        return obj.profit
-    profit.short_description = 'سود خالص'
+        return f"{obj.profit:,.0f} تومان"
+    profit.short_description = 'سود خالص||هزینه' 
+
+
+
