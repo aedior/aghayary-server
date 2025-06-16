@@ -5,9 +5,10 @@ from menuItem.models import MenuItem
 from django_jalali.admin import jDateTimeField
 from core.models import Core
 
-
-
-
+class Method_choice(models.IntegerChoices):
+    M = 0, 'کارت خوان'
+    CtC = 1, 'کارت به کارت'
+    C = 2, 'نقدی'
 
 class Order(Core):
     class Meta:
@@ -16,6 +17,7 @@ class Order(Core):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, verbose_name="مشتری", related_name="customer_order")
     created_at = jDateTimeField(auto_now_add=True, verbose_name="زمان")
     discount = models.IntegerField(default=0, verbose_name="تخفیف")
+    method = models.IntegerField(choices=Method_choice, default=0, verbose_name="روش پرداخت")
 
 
 

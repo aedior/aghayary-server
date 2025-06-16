@@ -14,10 +14,11 @@ class OrderItemInline(admin.TabularInline):
     readonly_fields = ['total_price']
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'customer', 'createdat', 'total_price_display', 'dis', 'invoice_link', 'created_by')
+    list_display = ('id', 'customer', 'createdat', 'total_price_display', 'dis', 'invoice_link', 'created_by', "method")
     list_filter = (
         ('created_at', JDateFieldListFilter),
-        'customer'
+        'customer',
+        "method"
     )
     inlines = [OrderItemInline]
 
